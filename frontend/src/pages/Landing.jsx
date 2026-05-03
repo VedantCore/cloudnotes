@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Cloud, ArrowRight, Sparkles, Zap, Shield, Smartphone, Globe } from 'lucide-react';
+import { ArrowRight, Sparkles, Zap, Shield, Smartphone, Globe } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 const Landing = () => {
   return (
@@ -11,25 +12,8 @@ const Landing = () => {
       <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px] mix-blend-screen" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen" />
 
-      {/* Glassmorphism Navbar */}
-      <nav className="fixed w-full z-50 bg-slate-950/50 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <Cloud className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">CloudNotes<span className="text-indigo-400">Pro</span></span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-              Sign In
-            </Link>
-            <Link to="/register" className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-sm font-medium backdrop-blur-md transition-all shadow-lg">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* Reusable Glassmorphism Navbar */}
+      <Navbar />
 
       {/* Hero Section */}
       <main className="relative z-10 max-w-7xl mx-auto px-6 pt-40 pb-20 flex flex-col items-center justify-center text-center min-h-screen">
@@ -86,7 +70,7 @@ const Landing = () => {
       </main>
 
       {/* Features Bento Box Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-32">
+      <section id="features" className="relative z-10 max-w-7xl mx-auto px-6 py-32">
         <div className="text-center mb-20">
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
             Everything you need, <span className="text-indigo-400">nothing you don't.</span>
