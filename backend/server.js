@@ -13,6 +13,8 @@ app.use(express.json());
 
 // Routes (This is the new line!)
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/notes', require('./routes/notes'));
 
 // Basic test route
 app.get('/', (req, res) => {
