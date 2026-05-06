@@ -75,3 +75,18 @@ exports.deleteNote = async (req, res) => {
     res.status(500).json({ message: 'Server Error deleting note' });
   }
 };
+
+exports.getSharedNote = async (req, res) => {
+  try {
+    // We use .populate() to get the username of the author without exposing their email/password
+    const note = await Note.findById(req.params.id).populate('user', 'username');
+    
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found' });
+    }
+
+    res.status(200).json(note);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error fetching shared note' });
+  }
+};

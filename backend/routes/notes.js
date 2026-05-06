@@ -1,7 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { getNotes, createNote, updateNote, deleteNote } = require('../controllers/noteController');
+
+// Just ONE single import line for all our controllers!
+const { getNotes, createNote, updateNote, deleteNote, getSharedNote } = require('../controllers/noteController');
 const { protect } = require('../middleware/authMiddleware');
+
+// @route   GET /api/notes/share/:id
+// @desc    Get a note by ID for public sharing
+// @access  Public (No token required)
+router.get('/share/:id', getSharedNote);
 
 // @route   GET /api/notes
 // @desc    Get all notes for a user

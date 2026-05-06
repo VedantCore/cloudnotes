@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   LogOut, Search, Plus, FileText, Settings, Cloud, 
   MoreVertical, Calendar, Book, CheckSquare, 
   ChevronRight, ChevronDown, Bold, Italic, Underline, 
-  Heading1, List, ArrowLeft, Save, Trash2
+  Heading1, List, ArrowLeft, Save, Trash2, Image
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,8 +16,9 @@ const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('notes');
   const [expandedNote, setExpandedNote] = useState(null);
   const [booksOpen, setBooksOpen] = useState(true);
-  const [notes, setNotes] = useState([]); // Now starts empty!
+  const [notes, setNotes] = useState([]); 
   const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef(null);
 
   // Mock Data for non-essential features
   const [books] = useState([
@@ -31,7 +32,7 @@ const Dashboard = () => {
     { id: 2, text: 'Setup custom domain', completed: false },
   ]);
 
-  // --- API INTEGRATION (The Magic Happens Here) ---
+  // --- API INTEGRATION ---
   const token = localStorage.getItem('token');
 
   // 1. Fetch Notes on Load
@@ -74,7 +75,7 @@ const Dashboard = () => {
         );
         setNotes([data, ...notes]);
       }
-      setExpandedNote(null); // Close editor after saving
+      setExpandedNote(null); 
     } catch (error) {
       console.error('Error saving note:', error);
     }
@@ -89,9 +90,40 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotes(notes.filter(n => n._id !== id));
-      setExpandedNote(null); // Close editor
+      setExpandedNote(null); 
     } catch (error) {
       console.error('Error deleting note:', error);
+    }
+  };
+
+  // 4. Handle S3 Image Upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      // Ask your backend for a secure presigned URL
+      const { data } = await axios.post(
+        'http://localhost:5000/api/upload/presigned-url',
+        { fileName: file.name, fileType: file.type },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Upload the file directly to AWS S3 using that URL
+      await axios.put(data.uploadUrl, file, {
+        headers: { 'Content-Type': file.type }
+      });
+
+      // Insert the Markdown image tag directly into the text editor
+      const markdownImage = `\n![${file.name}](${data.fileUrl})\n`;
+      setExpandedNote({
+        ...expandedNote,
+        content: (expandedNote.content || '') + markdownImage
+      });
+
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please check your AWS setup.');
     }
   };
 
@@ -120,7 +152,7 @@ const Dashboard = () => {
           <ArrowLeft className="w-4 h-4" /> Back to Notes
         </button>
         
-        {/* New Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex items-center gap-3">
           {expandedNote._id && (
             <button 
@@ -141,6 +173,8 @@ const Dashboard = () => {
 
       <div className="flex-1 overflow-y-auto px-8 py-12">
         <div className="max-w-3xl mx-auto">
+          
+          {/* Toolbar */}
           <div className="flex items-center gap-1 mb-8 p-1.5 bg-slate-900 border border-slate-800 rounded-xl inline-flex shadow-lg">
             <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><Bold className="w-4 h-4" /></button>
             <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><Italic className="w-4 h-4" /></button>
@@ -148,6 +182,22 @@ const Dashboard = () => {
             <div className="w-px h-6 bg-slate-700 mx-2"></div>
             <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><Heading1 className="w-4 h-4" /></button>
             <button className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"><List className="w-4 h-4" /></button>
+            <div className="w-px h-6 bg-slate-700 mx-2"></div>
+            
+            {/* NEW: Image Upload Button */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleImageUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-lg transition-colors"
+            >
+              <Image className="w-4 h-4" />
+            </button>
           </div>
 
           <input 
@@ -226,7 +276,6 @@ const Dashboard = () => {
           ) : activeMenu === 'tasks' ? (
             <motion.div key="tasks" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full w-full overflow-y-auto p-8 max-w-4xl mx-auto">
                <h2 className="text-3xl font-bold mb-8">My Tasks</h2>
-               {/* Tasks list hidden for brevity, same as before */}
                <p className="text-slate-400">Tasks are visually available. (Backend integration coming soon!)</p>
             </motion.div>
           ) : (
